@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Igrica: Snake</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+    }
+    #game-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    canvas {
+        border: 1px solid #ccc;
+        background-color: #fff;
+    }
+</style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Veličina polja za zmiju i hranu
+        const gridSize = 20;
+        // Veličina canvas-a
+        const canvasSize = 400;
+        // Pocetna pozicija zmije
+        let snake = [{ x: 200, y: 200 }];
+        // Pocetni pravac kretanja
+        let dx = gridSize;
+        let dy = 0;
+        // Pocetna pozicija hrane
+        let foodX, foodY;
+        // Broj bodova
+        let score = 0;
+        // Trenutno stanje igre
+        let gameOver = false;
+
+        // Glavna funkcija koja pokreće igru
+        function startGame() {
+            createFood();
+            mainLoop();
+            document.addEventListener('keydown', changeDirection);
+        }
+
+        // Funkcija za kreiranje hrane na random poziciji
+        function createFood() {
+            foodX = Math.floor(Math.random() * (canvasSize / gridSize)) * gridSize;
+            foodY = Math.floor(Math.random() * (canvasSize / gridSize)) * gridSize;
+        }
+
+        // Glavna petlja igre
+        function mainLoop() {
+            if (gameOver) {
+                return;
+            }
+
+            setTimeout(function() {
+                clearCanvas();
+                moveSnake();
+                drawFood();
+                drawSnake();
+                checkCollision();
+
+                if (!gameOver) {
+                    mainLoop();
+                }
+            }, 100);
+        }
+
+        // Funkcija za kretanje zmije
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === foodX && head.y === foodY) {
+                score++;
+                createFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        // Funkcija za crtanje zmije
+        function drawSnake() {
+            ctx.fillStyle = '#000';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+            });
+        }
+
+        // Funkcija za crtanje hrane
+        function drawFood() {
+            ctx.fillStyle = '#f00';
+            ctx.fillRect(foodX, foodY, gridSize, gridSize);
+        }
+
+        // Funkcija za proveru kolizije (sudara)
+        function checkCollision() {
+            const head = snake[0];
+            // Provera sudara sa zidovima
+            if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
+                gameOver = true;
+            }
+            // Provera sudara sa samom sobom
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    gameOver = true;
+                    break;
+                }
+            }
+        }
+
+        // Funkcija za promenu pravca kretanja zmije
+        function changeDirection(event) {
+            const keyPressed = event.keyCode;
+            if (keyPressed === 37 && dx === 0) { // left
+                dx = -gridSize;
+                dy = 0;
+            } else if (keyPressed === 39 && dx === 0) { // right
+                dx = gridSize;
+                dy = 0;
+            } else if (keyPressed === 38 && dy === 0) { // up
+                dx = 0;
+                dy = -gridSize;
+            } else if (keyPressed === 40 && dy === 0) { // down
+                dx = 0;
+                dy = gridSize;
+            }
+        }
+
+        // Funkcija za čišćenje canvas-a
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
+        }
+
+        // Pokretanje igre
+        startGame();
+    </script>
+</body>
+</html>
